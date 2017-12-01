@@ -30,5 +30,10 @@ var _ = Describe("Go check Suite", func() {
 			Expect(urlBody("https://www.google.com")).To(ContainSubstring("<title>Google</title>"))
 		})
 
+		It("returns ok", func() {
+			status := StatusOK("https://www.google.com")
+			Expect(status).To(Equal("ok"))
+		})
+
 	})
 })

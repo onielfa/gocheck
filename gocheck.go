@@ -46,3 +46,11 @@ func urlBody(url string) (string, error) {
 	return string(body), nil
 
 }
+
+func StatusOK(url string) string {
+	status, _ := statusCode(url)
+	if status == 200 {
+		return "ok"
+	}
+	return "ko"
+}
