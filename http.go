@@ -6,6 +6,48 @@ import (
 	"time"
 )
 
+var timeoutMilliseconds int = 5000
+
+type barrierResp struct {
+	Err    error
+	Resp   string
+	Status int
+}
+
+func barrierStatusCode(endpoints ...string) ([]int, []error) {
+
+	requestNumber := len(endpoints)
+	var status []int
+	var responseError []error
+
+	in := make(chan barrierResp, requestNumber)
+	defer close(in)
+
+	responses := make([]barrierResp, requestNumber)
+
+	for _, endpoint := range endpoints {
+		go statusCode(in, endpoint)
+	}
+
+	var hasError bool
+	for i := 0; i < requestNumber; i++ {
+		resp := <-in
+		responseError = append(responseError, resp.Err)
+		if resp.Err != nil {
+			hasError = true
+		}
+		responses[i] = resp
+	}
+	if !hasError {
+		for _, resp := range responses {
+			status = append(status, resp.Status)
+		}
+	}
+
+	return status, responseError
+
+}
+
 func createConnection(url string) http.Client {
 	client := http.Client{
 		Timeout: time.Duration(time.Duration(timeoutMilliseconds) * time.Millisecond),

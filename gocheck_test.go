@@ -15,16 +15,16 @@ func TestGocheck(t *testing.T) {
 var _ = Describe("Go check Suite", func() {
 	Context("Google get correct output", func() {
 
-		It("Contains text", func() {
+		It("Returns 200", func() {
 			endpoints := []string{"http://www.google.com", "http://www.flywire.com"}
-			result, _ := barrier(endpoints...)
+			result, _ := barrierStatusCode(endpoints...)
 			Expect(result[0]).To(Equal(200))
 			Expect(result[1]).To(Equal(200))
 		})
 
 		It("one contains 403", func() {
 			endpoints := []string{"http://www.google.com", "https://www.flywire.com/fsdfdsf"}
-			result, _ := barrier(endpoints...)
+			result, _ := barrierStatusCode(endpoints...)
 			Expect(result[0]).To(Equal(200))
 			Expect(result[1]).To(Equal(403))
 		})
@@ -32,7 +32,7 @@ var _ = Describe("Go check Suite", func() {
 		It("fails when there is a timeout", func() {
 			timeoutMilliseconds = 5
 			endpoints := []string{"http://www.google.com"}
-			_, responseError := barrier(endpoints...)
+			_, responseError := barrierStatusCode(endpoints...)
 			Expect(responseError[0].Error()).To(ContainSubstring("Timeout"))
 			timeoutMilliseconds = 5000
 		})
