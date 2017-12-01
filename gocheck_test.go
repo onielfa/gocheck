@@ -14,25 +14,37 @@ func TestGocheck(t *testing.T) {
 
 var _ = Describe("Go check Suite", func() {
 	Context("Google get correct output", func() {
-		It("returns 200", func() {
-			status, _ := statusCode("https://www.google.com")
-			Expect(status).To(Equal(200))
+
+		It("Contains text", func() {
+			endpoints := []string{"http://www.google.com", "http://www.flywire.com"}
+			result, _ := barrier(endpoints...)
+			Expect(result[0]).To(Equal(200))
+			Expect(result[1]).To(Equal(200))
+		})
+
+		It("one contains 403", func() {
+			endpoints := []string{"http://www.google.com", "https://www.flywire.com/fsdfdsf"}
+			result, _ := barrier(endpoints...)
+			Expect(result[0]).To(Equal(200))
+			Expect(result[1]).To(Equal(403))
 		})
 
 		It("fails when there is a timeout", func() {
 			timeoutMilliseconds = 5
-			_, err := statusCode("https://www.google.com")
-			Expect(err.Error()).To(ContainSubstring("Timeout"))
+			endpoints := []string{"http://www.google.com"}
+			_, responseError := barrier(endpoints...)
+			Expect(responseError[0].Error()).To(ContainSubstring("Timeout"))
 			timeoutMilliseconds = 5000
-		})
-
-		It("Contains text", func() {
-			Expect(urlBody("https://www.google.com")).To(ContainSubstring("<title>Google</title>"))
 		})
 
 		It("returns ok", func() {
 			status := StatusOK("https://www.google.com")
 			Expect(status).To(Equal("ok"))
+		})
+
+		It("returns ko", func() {
+			status := StatusOK("https://www.google.com", "https://www.flywire.com/ferde")
+			Expect(status).To(Equal("ko"))
 		})
 
 	})

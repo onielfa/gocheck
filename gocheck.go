@@ -1,56 +1,62 @@
 package gocheck
 
-import (
-	"fmt"
-	"io/ioutil"
-	"net/http"
-	"time"
-)
-
 var timeoutMilliseconds int = 5000
 
-func createConnection(url string) http.Client {
-	client := http.Client{
-		Timeout: time.Duration(time.Duration(timeoutMilliseconds) * time.Millisecond),
-	}
-	return client
+type barrierResp struct {
+	Err    error
+	Resp   string
+	Status int
 }
 
-//Check Status Code
-func statusCode(url string) (int, error) {
+func barrier(endpoints ...string) ([]int, []error) {
 
-	client := createConnection(url)
-	response, err := client.Get(url)
+	requestNumber := len(endpoints)
+	var status []int
+	var responseError []error
 
-	if err != nil {
-		fmt.Println("ERROR: ", err)
-		return 0, err
+	in := make(chan barrierResp, requestNumber)
+	defer close(in)
+
+	responses := make([]barrierResp, requestNumber)
+
+	for _, endpoint := range endpoints {
+		go statusCode(in, endpoint)
 	}
-	return response.StatusCode, nil
+
+	var hasError bool
+	for i := 0; i < requestNumber; i++ {
+		resp := <-in
+		responseError = append(responseError, resp.Err)
+		if resp.Err != nil {
+			hasError = true
+		}
+		responses[i] = resp
+	}
+	if !hasError {
+		for _, resp := range responses {
+			status = append(status, resp.Status)
+		}
+	}
+
+	return status, responseError
+
 }
 
-//Check String response
-func urlBody(url string) (string, error) {
+func StatusOK(endpoints ...string) string {
+	responses, errors := barrier(endpoints...)
 
-	client := createConnection(url)
-	response, err := client.Get(url)
-
-	if err != nil {
-		fmt.Println("ERROR: ", err)
+	for _, err := range errors {
+		if err != nil {
+			return "ko"
+		}
 	}
 
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		fmt.Println("ERROR: ", err)
+	for _, resp := range responses {
+		if resp != 200 {
+			return "ko"
+		}
 	}
-	return string(body), nil
 
-}
+	return "ok"
 
-func StatusOK(url string) string {
-	status, _ := statusCode(url)
-	if status == 200 {
-		return "ok"
-	}
-	return "ko"
 }
