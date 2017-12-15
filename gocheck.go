@@ -3,16 +3,18 @@ package gocheck
 import "net/http"
 import "fmt"
 
-func checkRequest() bool {
+func checkRequest(url string) bool {
 
-	reponse, err := http.Get("http://www.google.com/")
+	response, err := http.Get(url)
 
-	fmt.Printf("Body: %v", reponse.Body)
-	fmt.Printf("Error: %v", err)
-
-	if err == nil {
-		return true
+	if err != nil {
+		fmt.Printf("Error: %v", err)
+		return false
 	}
 
-	return false
+	fmt.Printf("Body: %v", response.Body)
+
+	defer response.Body.Close()
+
+	return true
 }

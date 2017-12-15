@@ -15,7 +15,10 @@ func TestGoCheck(t *testing.T) {
 var _ = Describe("Gocheck", func() {
 	Context("Http connection", func() {
 		It("Can connect", func() {
-			Expect(checkRequest()).Should(BeEquivalentTo(true))
+			Expect(checkRequest("https://www.google.com")).Should(BeEquivalentTo(true))
+		})
+		It("Can't connect", func() {
+			Expect(checkRequest("https://google.com.cccc")).Should(BeEquivalentTo(false))
 		})
 	})
 })
