@@ -1,7 +1,7 @@
 package gocheck
 
 func StatusOK(endpoints ...string) string {
-	responses, errors := barrierStatusCode(endpoints...)
+	responses, errors := BarrierStatusCode(endpoints...)
 
 	for _, err := range errors {
 		if err != nil {

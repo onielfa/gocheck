@@ -14,7 +14,7 @@ type barrierResp struct {
 	Status int
 }
 
-func barrierStatusCode(endpoints ...string) ([]int, []error) {
+func BarrierStatusCode(endpoints ...string) ([]int, []error) {
 
 	requestNumber := len(endpoints)
 	var status []int
@@ -26,7 +26,7 @@ func barrierStatusCode(endpoints ...string) ([]int, []error) {
 	responses := make([]barrierResp, requestNumber)
 
 	for _, endpoint := range endpoints {
-		go statusCode(in, endpoint)
+		go StatusCode(in, endpoint)
 	}
 
 	var hasError bool
@@ -56,7 +56,7 @@ func createConnection(url string) http.Client {
 }
 
 //Check Status Code
-func statusCode(out chan<- barrierResp, url string) {
+func StatusCode(out chan<- barrierResp, url string) {
 
 	response := barrierResp{}
 
